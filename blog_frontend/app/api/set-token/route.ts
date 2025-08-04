@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   cookies().set('token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    maxAge: 60 * 60, // 1 hour
+    maxAge: 60 * 60, // 1 hour expiry token
   });
   return NextResponse.json({ success: true });
 }

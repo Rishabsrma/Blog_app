@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import ToastContainer from '@/components/ToastContainer';
+import AuthInitializer from '@/components/AuthInitializer';
 
 export const metadata: Metadata = {
   title: 'Blog Application',
@@ -17,6 +19,8 @@ export default function RootLayout({
       className="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100"
     >
       <body className="min-h-screen transition-colors duration-300">
+        <AuthInitializer />
+        <ToastContainer />
         {children}
       </body>
     </html>

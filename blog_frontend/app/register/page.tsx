@@ -5,9 +5,11 @@ import { useAuthStore } from '@/lib/store/auth';
 import { useToastStore } from '@/lib/store/toast';
 import Navbar from '@/components/Navbar';
 
-export default function Login() {
+export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [bio, setBio] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { login, isAuthenticated } = useAuthStore();
@@ -23,24 +25,33 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
 
+    if (password !== confirmPassword) {
+      addToast('Passwords do not match', 'error');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const res = await fetch('http://localhost:8000/api/login/', {
+      const res = await fetch('http://localhost:8000/api/register/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, bio }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
         login(data.token, data.user);
-        addToast('Successfully logged in!', 'success');
+        addToast(
+          'Account created successfully! Welcome to Blog App!',
+          'success'
+        );
         router.push('/');
       } else {
-        addToast(data.error || 'Login failed', 'error');
+        addToast(data.error || 'Registration failed', 'error');
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Registration error:', error);
       addToast('Network error. Please try again.', 'error');
     } finally {
       setLoading(false);
@@ -51,7 +62,7 @@ export default function Login() {
     <div className="max-w-4xl mx-auto p-4">
       <Navbar />
       <div className="max-w-md mx-auto mt-8">
-        <h1 className="text-2xl font-bold mb-6">Login</h1>
+        <h1 className="text-2xl font-bold mb-6">Register</h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
@@ -72,19 +83,36 @@ export default function Login() {
             disabled={loading}
             required
           />
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-600"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            disabled={loading}
+            required
+          />
+          <textarea
+            placeholder="Bio (optional)"
+            className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-600"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            disabled={loading}
+            rows={3}
+          />
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition disabled:opacity-50"
             disabled={loading}
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Creating Account...' : 'Register'}
           </button>
         </form>
 
         <p className="mt-4 text-center text-gray-600 dark:text-gray-400">
-          Don&apos;t have an account?{' '}
-          <a href="/register" className="text-blue-600 hover:underline">
-            Register here
+          Already have an account?{' '}
+          <a href="/login" className="text-blue-600 hover:underline">
+            Login here
           </a>
         </p>
       </div>
