@@ -28,6 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'posts.User'
+DEFAULT_CHARSET = 'utf-8'
 
 # Application definition
 
