@@ -52,29 +52,40 @@ def login(request):
 
 @csrf_exempt
 def post_list(request):
-    if request.method == 'GET':
-        posts = list(Post.objects.values('id', 'title', 'content', 'mood', 'author_id'))
-        return JsonResponse(posts, safe=False)
-    
-    elif request.method == 'POST':
-        token = request.headers.get('Authorization', '').split('Bearer ')[-1]
-        payload = decode_jwt(token)
-        if not payload:
-            return JsonResponse({'error': 'Invalid token'}, status=401)
-            
+    if request.method == 'POST':
         try:
+            # 1. Parse JSON
             data = json.loads(request.body)
+            
+            # 2. Validate Token
+            token = request.headers.get('Authorization', '').split('Bearer ')[-1]
+            if not token:
+                return JsonResponse({'error': 'Authentication required'}, status=401)
+                
+            # 3. Validate Data
+            if not data.get('title'):
+                return JsonResponse({'error': 'Title is required'}, status=400)
+                
+            if len(data['title']) > 200:
+                return JsonResponse({'error': 'Title cannot exceed 200 characters'}, status=400)
+                
+            if not data.get('content'):
+                return JsonResponse({'error': 'Content is required'}, status=400)
+                
+            # Create Post (if all validations pass)
             post = Post.objects.create(
                 title=data['title'],
                 content=data['content'],
-                mood=data['mood'],
-                author_id=payload['user_id']
+                author=request.user  
             )
+            
             return JsonResponse({
                 'id': post.id,
                 'title': post.title,
-                'mood': post.mood,
                 'created_at': post.created_at
             }, status=201)
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            return JsonResponse({'error': str(e)}, status=500)
